@@ -218,9 +218,14 @@ namespace AssemblyCSharp
         }       
 	}    
 
-	public class Field
+	public class Field : MonoBehaviour
 	{
-        private float timeToMove;
+        private float timeToMove;        
+
+        public Transform FieldTopLeft;
+        public GameObject blockPrefab;
+        public Material unused;
+        public Material[] used;
 
 		public const int FIELD_X = 24;
 		public const int FIELD_Y = 24;
@@ -228,10 +233,11 @@ namespace AssemblyCSharp
         public const int CLEAN_BLOCK_THRESHOLD = 6;
         public const float SPEED_START = 1.0f;
         public const float SPEED_INC = 0.5f;
-
+        
         public Block CurrentBlock, NextBlock;
 
         public int[,] F = new int[FIELD_X, FIELD_Y];
+        public GameObject[,] Sprites = new GameObject[FIELD_X, FIELD_Y];
 
         public int Scores = 0;
 
@@ -459,6 +465,27 @@ namespace AssemblyCSharp
                             F[CurrentBlock.X + i, CurrentBlock.Y + j] = CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i];
 
             //todo: раскраска спрайтов поля
+            for (int i = 0; i < FIELD_X; i++)
+                for (int j = 0; j < FIELD_Y; j++)
+                    if (F[i, j] == 0)
+                    {
+                        Sprites[i, j].renderer.material = unused;
+                    }
+                    else if (F[i, j] > 0)
+                        Sprites[i, j].renderer.material = used[1 + F[i, j] % 10];
+            
+
+                    /*
+                           with Sprites[i, j] do
+      begin
+        if F[i, j] = 0 then
+          Material.Diffuse := colorUnused
+        else if F[i, j] > 0 then
+          //1,2,3... - цвета дин. блоков, 11, 12, 13... - цвета стат. блоков
+          Material.Diffuse := colorUsed[F[i, j] mod 10];
+      end;
+                     */
+
             //todo: раскраска спрайта следующего блока
 		}
 
@@ -571,13 +598,23 @@ namespace AssemblyCSharp
                 }
                 else
                     AddNextBlock();
-            }  
+            }
+            print("move!");
 		}
 
-		public Field ()
+
+
+		public void Start()
 		{
-            //todo: создание спрайтов
-            
+
+            Vector2 startPos = new Vector2(FieldTopLeft.position.x, FieldTopLeft.position.y);
+            for (int i = 0; i < FIELD_X; i++)
+                for (int j = 0; j < FIELD_Y; j++)
+                {
+                    Sprites[i, j] = (GameObject) Instantiate(blockPrefab, new Vector3(startPos.x + i * 0.35f, startPos.y - j * 0.35f, 0), Quaternion.identity);
+                }
+
+
             //Start the game!
             CurrentSpeed = SPEED_START;
             CurrentCleanPeriod = CLEAN_PERIOD_START;
@@ -594,7 +631,7 @@ namespace AssemblyCSharp
 
         }
 
-        public void Update(float dt)
+        public void DoUpdate(float dt)
         {
             if (timeToClean > 0)
             {
@@ -617,6 +654,11 @@ namespace AssemblyCSharp
                     timeToMove = 1 / CurrentSpeed;
                 }
             }
+        }
+
+        public void Update()
+        {
+            this.DoUpdate(Time.deltaTime);
         }
 	}
 }
