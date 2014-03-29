@@ -5,218 +5,7 @@ namespace AssemblyCSharp
 {
 	public enum Direction { Right, Left, Top, Bottom };
 
-    public delegate void OnGameOver();
-
-	public struct BoundingBox
-	{
-		public int Left, Right, Top, Bottom;
-		public BoundingBox(int left, int right, int top, int bottom)
-		{
-			this.Left = left;
-			this.Right = right;
-			this.Top = top;
-			this.Bottom = bottom;
-		}
-	}
-
-	public class Block
-	{
-		public const int MAX_COLORS = 4;
-        public const int BLOCK_CENTER_X = 1;
-        public const int BLOCK_CENTER_Y = 1;
-
-		private const string 
-			cI1 = "0000"+"1111"+"0000"+"0000",
-			cI2 = "0100"+"0100"+"0100"+"0100",
-			cT1 = "0000"+"1110"+"0100"+"0000",
-			cT2 = "0100"+"1100"+"0100"+"0000",
-			cT3 = "0100"+"1110"+"0000"+"0000",
-			cT4 = "0100"+"0110"+"0100"+"0000",
-			cL1 = "0000"+"1110"+"1000"+"0000",
-			cL2 = "1100"+"0100"+"0100"+"0000",
-			cL3 = "0010"+"1110"+"0000"+"0000",
-			cL4 = "0100"+"0100"+"0110"+"0000",
-			cJ1 = "1000"+"1110"+"0000"+"0000",
-			cJ2 = "0110"+"0100"+"0100"+"0000",
-			cJ3 = "0000"+"1110"+"0010"+"0000",
-			cJ4 = "0100"+"0100"+"1100"+"0000",
-			cZ1 = "0000"+"1100"+"0110"+"0000",
-			cZ2 = "0010"+"0110"+"0100"+"0000",
-			cS1 = "0000"+"0110"+"1100"+"0000",
-			cS2 = "0100"+"0110"+"0010"+"0000",
-			cO1 = "0110"+"0110"+"0000"+"0000";
-
-		public int[,,] Matrices;
-		public int ColorIndex;
-		public int X, Y;
-		public int RotateIndex;
-		public Direction MoveDirection;
-		public BoundingBox[] BlockBounds;
-
-		private void FillMatrixFromString(int rotIndex, string aString)		
-		{
-            for (int i = 0; i < 4; i++)
-                for (int j = 0; j < 4; j++)
-                    Matrices[rotIndex, i, j] = int.Parse(aString[4 * i + j].ToString()) * ColorIndex;
-			
-		}	
-		
-		private void CalcBounds()
-		{
-            BlockBounds = new BoundingBox[Matrices.GetLength(0)];
-			for (int rot = 0; rot < Matrices.GetLength(0); rot++)
-			{
-				//top
-				BlockBounds[rot].Top = -1;
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						if (Matrices[rot, i, j] != 0)
-						{
-							BlockBounds[rot].Top = i;
-							break;
-						}
-					}
-					if (BlockBounds[rot].Top != -1)
-						break;
-				}
-
-				//bottom
-				BlockBounds[rot].Bottom = -1;
-				for (int i = 3; i >= 0; i--)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						if (Matrices[rot, i, j] != 0)
-						{
-							BlockBounds[rot].Bottom = i;
-							break;
-						}
-					}
-					if (BlockBounds[rot].Bottom != -1)
-						break;
-				}
-				
-				//left
-				BlockBounds[rot].Left = -1;
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						if (Matrices[rot, j, i] != 0)
-						{
-							BlockBounds[rot].Left = i;
-							break;
-						}
-					}
-					if (BlockBounds[rot].Left != -1)
-						break;
-				}
-
-				//right
-				BlockBounds[rot].Right = -1;
-				for (int i = 3; i <= 0; i--)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						if (Matrices[rot, j, i] != 0)
-						{
-							BlockBounds[rot].Right = i;
-							break;
-						}
-					}
-					if (BlockBounds[rot].Right != -1)
-						break;
-				}
-			}
-		}
-
-		public static Block CreateRandomBlock()
-		{
-			Block block = new Block ();
-			System.Random r = new System.Random ();
-			int index = r.Next (7);
-			block.ColorIndex = 1 + r.Next(MAX_COLORS); 
-			switch (index) 
-			{
-				case 0: 
-                    //I
-					block.Matrices = new int[2, 4, 4];
-                    block.FillMatrixFromString(0, cI1);
-                    block.FillMatrixFromString(1, cI2); 
-					break;
-				case 1: 
-                    //T
-                    block.Matrices = new int[4, 4, 4];
-                    block.FillMatrixFromString(0, cT1);
-                    block.FillMatrixFromString(1, cT2); 
-                    block.FillMatrixFromString(2, cT3);
-                    block.FillMatrixFromString(3, cT4); 
-					break;
-				case 2: 
-                    //L
-                    block.Matrices = new int[4, 4, 4];
-                    block.FillMatrixFromString(0, cL1);
-                    block.FillMatrixFromString(1, cL2); 
-                    block.FillMatrixFromString(2, cL3);
-                    block.FillMatrixFromString(3, cL4); 
-					break;
-				case 3: 
-                    //J
-                    block.Matrices = new int[4, 4, 4];
-                    block.FillMatrixFromString(0, cJ1);
-                    block.FillMatrixFromString(1, cJ2); 
-                    block.FillMatrixFromString(2, cJ3);
-                    block.FillMatrixFromString(3, cJ4); 
-					break;
-				case 4: 
-                    //Z
-                    block.Matrices = new int[2, 4, 4];
-                    block.FillMatrixFromString(0, cZ1);
-                    block.FillMatrixFromString(1, cZ2); 
-					break;
-				case 5: 
-                    //S
-                    block.Matrices = new int[2, 4, 4];
-                    block.FillMatrixFromString(0, cS1);
-                    block.FillMatrixFromString(1, cS2); 
-					break;
-				case 6: 
-                    //O
-                    block.Matrices = new int[1, 4, 4];
-                    block.FillMatrixFromString(0, cO1);
-					break;
-			}
-            block.CalcBounds();
-            block.RotateIndex = r.Next(block.Matrices.GetLength(0));
-            return block;
-		}
-		
-		public void Rotate()
-		{
-            RotateIndex = GetNextRotation();
-		}
-		public int GetNextRotation()
-		{
-            if (RotateIndex == Matrices.GetLength(0))
-                return 0;
-            else
-                return (RotateIndex + 1);
-		}
-
-        public void Move()
-        {
-            switch (MoveDirection)
-            {
-                case Direction.Right: X += 1; break;
-                case Direction.Left: X -= 1; break;
-                case Direction.Top: Y -= 1; break;
-                case Direction.Bottom: Y += 1; break;
-                    
-            }
-        }       
-	}    
+    public delegate void OnGameOver();	    
 
 	public class Field : MonoBehaviour
 	{
@@ -247,12 +36,31 @@ namespace AssemblyCSharp
 
         public OnGameOver gameOver;
 
+        private int GetF(int x, int y)
+        {
+            if (x >= this.F.GetLength(0) || y >= this.F.GetLength(1) || x < 0 || y < 0)
+            {
+                print(string.Format("Попытка получить доступ к {0}, {1}. Максимум: {2}, {3}", x, y, this.F.GetLength(0), this.F.GetLength(1)));
+                return 0;
+            }
+            else
+                return this.F[x, y];
+        }
+
+        private void SetF(int x, int y, int v)
+        {
+            if (x >= this.F.GetLength(0) || y >= this.F.GetLength(1) || x < 0 || y < 0)
+                print(string.Format("Попытка получить доступ к {0}, {1}. Максимум: {2}, {3}", x, y, this.F.GetLength(0), this.F.GetLength(1)));
+            else
+                this.F[x, y] = v;
+        }
+
         private int CheckCell(int c, int r, int value)
         {
-            if (IsInBounds(c, r) && F[c, r] == value)                
+            if (IsInBounds(c, r) && GetF(c, r) == value)                
             {
                 int result = 1;
-                F[c, r] = value + 100;
+                SetF(c, r, value + 100);
                 result += CheckCell(c - 1, r, value);
                 result += CheckCell(c + 1, r, value);
                 result += CheckCell(c, r + 1, value);
@@ -261,7 +69,6 @@ namespace AssemblyCSharp
             }
             else
                 return 0;
-
         }  
 
         private void MinusBlocksToClean(bool onlyRevert, ref float totalTime)
@@ -292,10 +99,11 @@ namespace AssemblyCSharp
             CurrentBlock = NextBlock;
             NextBlock = Block.CreateRandomBlock();
 
+            BoundingBox b = CurrentBlock.BlockBounds[CurrentBlock.RotateIndex];
             switch (origin)
             {
                 case Direction.Right:
-                    CurrentBlock.X = FIELD_X - CurrentBlock.BlockBounds[CurrentBlock.RotateIndex].Right - 1;
+                    CurrentBlock.X = FIELD_X - 1 - b.Right;
                     CurrentBlock.Y = FIELD_Y / 2 - Block.BLOCK_CENTER_Y;
                     CurrentBlock.MoveDirection = Direction.Left;
                     //todo:
@@ -330,67 +138,71 @@ namespace AssemblyCSharp
 		}
 		bool CouldBlockMove(Direction direction)
 		{
+            BoundingBox b = CurrentBlock.BlockBounds[CurrentBlock.RotateIndex];
+            int x = CurrentBlock.X;
+            int y = CurrentBlock.Y;
+            int rot = CurrentBlock.RotateIndex;
             switch (direction)
             {
                 case Direction.Right:
-                    for (int i = 3; i >= 0; i--)
-                        for (int j = 0; j < 4; j++)
+                    for (int i = Block.BLOCK_SIZE - 1; i >= 0; i--)
+                        for (int j = 0; j < Block.BLOCK_SIZE; j++)
                         {
-                            if (CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] == 0)
+                            if (CurrentBlock.Matrices[rot, i, j] == 0)
                                 continue;
-                            bool stop = false || F[i + CurrentBlock.X + 1, j + CurrentBlock.Y] > 10;
+                            bool stop = false || GetF(i + x + 1, j + y) > 10;
                             if (direction == CurrentBlock.MoveDirection)
-                                stop = stop || (i + CurrentBlock.X + 1 > FIELD_X / 2 - 1);
+                                stop = stop || (i + x + 1 > FIELD_X / 2 - 1);
                             else
-                                stop = stop || (i + CurrentBlock.X + 1 > FIELD_X - 1);
+                                stop = stop || (i + x + 1 > FIELD_X - 1);
                             if (stop)
                                 return false;
                         }
                     break;
 
                 case Direction.Left:
-                    for (int i = 0; i < 4; i++)
-                        for (int j = 0; j < 4; j++)
+                    for (int i = 0; i < Block.BLOCK_SIZE; i++)
+                        for (int j = 0; j < Block.BLOCK_SIZE; j++)
                         {
-                            if (CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] == 0)
+                            if (CurrentBlock.Matrices[rot, i, j] == 0)
                                 continue;
-                            bool stop = false || F[i + CurrentBlock.X - 1, j + CurrentBlock.Y] > 10;
+                            bool stop = false || GetF(i + x - 1, j + y) > 10;
                             if (direction == CurrentBlock.MoveDirection)
-                                stop = stop || (i + CurrentBlock.X - 1 < FIELD_X / 2);
+                                stop = stop || (i + x - 1 < FIELD_X / 2);
                             else
-                                stop = stop || (i + CurrentBlock.X - 1 < 0);
+                                stop = stop || (i + x - 1 < 0);
                             if (stop)
                                 return false;
                         }
                     break;
 
                 case Direction.Top:
-                    for (int j = 0; j < 4; j++)
-                        for (int i = 0; i < 4; i++)
+                    for (int j = 0; j < Block.BLOCK_SIZE; j++)
+                        for (int i = 0; i < Block.BLOCK_SIZE; i++)
                         {
-                            if (CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] == 0)
+                            if (CurrentBlock.Matrices[rot, i, j] == 0)
                                 continue;
-                            bool stop = false || F[i + CurrentBlock.X, j + CurrentBlock.Y - 1] > 10;
+                            bool stop = false || GetF(i + x, j + y - 1) > 10;
                             if (direction == CurrentBlock.MoveDirection)
-                                stop = stop || (j + CurrentBlock.Y - 1 < FIELD_Y / 2);
+                                stop = stop || (j + y - 1 < FIELD_Y / 2);
                             else
-                                stop = stop || (j + CurrentBlock.Y - 1 < 0);
+                                stop = stop || (j + y - 1 < 0);
                             if (stop)
                                 return false;
                         }
                     break;
 
                 case Direction.Bottom:
-                    for (int j = 3; j >= 0; j--)
-                        for (int i = 0; i < 4; i++)
+                    for (int j = Block.BLOCK_SIZE - 1; j >= 0; j--)
+                        for (int i = 0; i < Block.BLOCK_SIZE; i++)
                         {
-                            if (CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] == 0)
+                            if (CurrentBlock.Matrices[rot, i, j] == 0)
                                 continue;
-                            bool stop = false || F[i + CurrentBlock.X, j + CurrentBlock.Y + 1] > 10;
+                            bool stop = false || GetF(i + x, j + y + 1) > 10;
                             if (direction == CurrentBlock.MoveDirection)
-                                stop = stop || (j + CurrentBlock.Y + 1 > FIELD_Y / 2 - 1);
+                                stop = stop || (j + y + 1 > FIELD_Y / 2 - 1);
                             else
-                                stop = stop || (j + CurrentBlock.Y + 1 > FIELD_Y - 1);
+                                stop = stop || (j + y + 1 > FIELD_Y - 1);
                             if (stop)
                                 return false;
                         }
@@ -403,18 +215,19 @@ namespace AssemblyCSharp
 		bool CouldBlockRotate()
 		{
             int nextRotation = CurrentBlock.GetNextRotation();
-            for (int i = 0; i < 4; i++)
-                for (int j = 0; j < 4; j++)
-                    if (CurrentBlock.Matrices[nextRotation, j, i] > 0 && F[CurrentBlock.X + i, CurrentBlock.Y + j] > 10)
+            for (int i = 0; i < Block.BLOCK_SIZE; i++)
+                for (int j = 0; j < Block.BLOCK_SIZE; j++)
+                    if (CurrentBlock.Matrices[nextRotation, i, j] > 0 && GetF(CurrentBlock.X + i, CurrentBlock.Y + j) > 10)
                         return false;
             return true;
 		}
 
 		bool CouldBlockSet()
 		{
-            for (int i = 0; i < 4; i++)
-                for (int j = 0; j < 4; j++)
-                    if (F[CurrentBlock.X + i, CurrentBlock.Y + j] > 10 && CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] > 0)
+            BoundingBox b = CurrentBlock.BlockBounds[CurrentBlock.RotateIndex];            
+            for (int i = 0; i < Block.BLOCK_SIZE; i++)
+                for (int j = 0; j < Block.BLOCK_SIZE; j++)
+                    if (GetF(CurrentBlock.X + i, CurrentBlock.Y + j) > 10 && CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j] > 0)
                         return false;
             return true;
 		}
@@ -456,13 +269,10 @@ namespace AssemblyCSharp
 
             if (CurrentBlock != null)
                 //"draw" current block
-                for (int i = 0; i < 4; i++)
-                    for (int j = 0; j < 4; j++)
-                        if (IsInBounds(CurrentBlock.X + i, CurrentBlock.Y + j) && CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] > 0)
-                            //!!!! У Block-ов транспонированная матрица
-                            //Поле - столбец, строка
-                            //Блок - строка, столбец
-                            F[CurrentBlock.X + i, CurrentBlock.Y + j] = CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i];
+                for (int i = 0; i < Block.BLOCK_SIZE; i++)
+                    for (int j = 0; j < Block.BLOCK_SIZE; j++)
+                        if (IsInBounds(CurrentBlock.X + i, CurrentBlock.Y + j) && CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j] > 0)                            
+                            SetF(CurrentBlock.X + i, CurrentBlock.Y + j, CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j]);                            
 
             //todo: раскраска спрайтов поля
             for (int i = 0; i < FIELD_X; i++)
@@ -472,19 +282,7 @@ namespace AssemblyCSharp
                         Sprites[i, j].renderer.material = unused;
                     }
                     else if (F[i, j] > 0)
-                        Sprites[i, j].renderer.material = used[1 + F[i, j] % 10];
-            
-
-                    /*
-                           with Sprites[i, j] do
-      begin
-        if F[i, j] = 0 then
-          Material.Diffuse := colorUnused
-        else if F[i, j] > 0 then
-          //1,2,3... - цвета дин. блоков, 11, 12, 13... - цвета стат. блоков
-          Material.Diffuse := colorUsed[F[i, j] mod 10];
-      end;
-                     */
+                        Sprites[i, j].renderer.material = used[F[i, j] % 10];        
 
             //todo: раскраска спрайта следующего блока
 		}
@@ -548,6 +346,7 @@ namespace AssemblyCSharp
 
 		public void AddNextBlock()
 		{
+            
             switch (CurrentBlock.MoveDirection)
             {
                 case Direction.Right:
@@ -563,6 +362,10 @@ namespace AssemblyCSharp
                     AddBlock(Direction.Left);
                     break;
             }
+
+            print(CurrentBlock.BlockBounds[CurrentBlock.RotateIndex]);
+             
+            //AddBlock(Direction.Bottom);
             if (CouldBlockSet())
                 timeToMove = 1.0f / CurrentSpeed;
             else
@@ -571,10 +374,10 @@ namespace AssemblyCSharp
 
         private void BlockSet()
         {
-            for (int i = 0; i < 4; i++)
-                for (int j = 0; j < 4; j++)
-                    if (IsInBounds(CurrentBlock.X + i, CurrentBlock.Y + j) && CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] > 0)
-                        F[CurrentBlock.X + i, CurrentBlock.Y + j] = CurrentBlock.Matrices[CurrentBlock.RotateIndex, j, i] + 10;
+            for (int i = 0; i < Block.BLOCK_SIZE; i++)
+                for (int j = 0; j < Block.BLOCK_SIZE; j++)
+                    if (IsInBounds(CurrentBlock.X + i, CurrentBlock.Y + j) && CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j] > 0)
+                        SetF(CurrentBlock.X + i, CurrentBlock.Y + j, CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j] + 10);
         }  
 
 		public void MoveCurrentBlock (float dt)
@@ -598,8 +401,7 @@ namespace AssemblyCSharp
                 }
                 else
                     AddNextBlock();
-            }
-            print("move!");
+            }            
 		}
 
 
@@ -627,8 +429,49 @@ namespace AssemblyCSharp
 		}
 
         private void PlayerControl(float dt)
-        { 
+        {
+            if (CurrentBlock == null)
+                return;
 
+            //receive input info
+            int vert = 0, hor = 0;            
+            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
+                vert = -1;
+            else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+                vert = 1;
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+                hor = -1;
+            else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+                hor = 1;
+            bool rotate = Input.GetKeyDown(KeyCode.Space);           
+
+            //process info                    
+            if (hor > 0 && CurrentBlock.MoveDirection != Direction.Left && CouldBlockMove(Direction.Right))
+                CurrentBlock.X += 1;
+            else if (hor < 0 && CurrentBlock.MoveDirection != Direction.Right && CouldBlockMove(Direction.Left))
+                CurrentBlock.X -= 1;
+
+            if (vert > 0 && CurrentBlock.MoveDirection != Direction.Top && CouldBlockMove(Direction.Bottom))
+                CurrentBlock.Y += 1;
+            else if (vert < 0 && CurrentBlock.MoveDirection != Direction.Bottom && CouldBlockMove(Direction.Top))
+                CurrentBlock.Y -= 1;
+
+            if (rotate)
+                CurrentBlock.Rotate();
+
+
+            /*
+            if (hor != 0)
+            {
+                if (CurrentBlock.MoveDirection == Direction.Bottom || CurrentBlock.MoveDirection == Direction.Top)
+                    CurrentBlock.X += Mathf.CeilToInt(hor);
+            }
+            else if (vert != 0)
+            {
+                if (CurrentBlock.MoveDirection == Direction.Left || CurrentBlock.MoveDirection == Direction.Right)
+                    CurrentBlock.Y += Mathf.CeilToInt(vert);
+            }
+             */
         }
 
         public void DoUpdate(float dt)
