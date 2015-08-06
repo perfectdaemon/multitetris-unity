@@ -26,7 +26,7 @@ namespace AssemblyCSharp
         public const int MAX_COLORS = 4;
         public const int BLOCK_CENTER_X = 1;
         public const int BLOCK_CENTER_Y = 1;
-        public const int BLOCK_SIZE = 4;
+        public const int BLOCK_SIZE = 4;       
 
         private const string
             cI1 = "0000" + "1111" + "0000" + "0000",
