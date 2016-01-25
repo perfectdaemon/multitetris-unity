@@ -41,7 +41,7 @@ namespace AssemblyCSharp
         {
             if (x >= this.F.GetLength(0) || y >= this.F.GetLength(1) || x < 0 || y < 0)
             {
-                print(string.Format("Попытка получить доступ к {0}, {1}. Максимум: {2}, {3}", x, y, this.F.GetLength(0), this.F.GetLength(1)));
+                print(string.Format("РџРѕРїС‹С‚РєР° РїРѕР»СѓС‡РёС‚СЊ РґРѕСЃС‚СѓРї Рє {0}, {1}. РњР°РєСЃРёРјСѓРј: {2}, {3}", x, y, this.F.GetLength(0), this.F.GetLength(1)));
                 return 0;
             }
             else
@@ -51,7 +51,7 @@ namespace AssemblyCSharp
         private void SetF(int x, int y, int v)
         {
             if (x >= this.F.GetLength(0) || y >= this.F.GetLength(1) || x < 0 || y < 0)
-                print(string.Format("Попытка получить доступ к {0}, {1}. Максимум: {2}, {3}", x, y, this.F.GetLength(0), this.F.GetLength(1)));
+                print(string.Format("РџРѕРїС‹С‚РєР° РїРѕР»СѓС‡РёС‚СЊ РґРѕСЃС‚СѓРї Рє {0}, {1}. РњР°РєСЃРёРјСѓРј: {2}, {3}", x, y, this.F.GetLength(0), this.F.GetLength(1)));
             else
                 this.F[x, y] = v;
         }
@@ -258,7 +258,7 @@ namespace AssemblyCSharp
 
         Vector2 BlockPosToScreenPos(int x, int y)
         {
-            throw new NotImplementedException("Метод не реализован");
+            throw new NotImplementedException("РњРµС‚РѕРґ РЅРµ СЂРµР°Р»РёР·РѕРІР°РЅ");
         }
 
         public void Redraw(float dt)
@@ -276,22 +276,22 @@ namespace AssemblyCSharp
                         if (IsInBounds(CurrentBlock.X + i, CurrentBlock.Y + j) && CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j] > 0)
                             SetF(CurrentBlock.X + i, CurrentBlock.Y + j, CurrentBlock.Matrices[CurrentBlock.RotateIndex, i, j]);
 
-            //todo: раскраска спрайтов поля
+            //todo: СЂР°СЃРєСЂР°СЃРєР° СЃРїСЂР°Р№С‚РѕРІ РїРѕР»СЏ
             for (int i = 0; i < FIELD_X; i++)
                 for (int j = 0; j < FIELD_Y; j++)
                     if (F[i, j] == 0)
                     {
-                        Sprites[i, j].renderer.material = unused;
+                        Sprites[i, j].GetComponent<Renderer>().material = unused;
                     }
                     else if (F[i, j] > 0)
-                        Sprites[i, j].renderer.material = used[F[i, j] % 10];
+                        Sprites[i, j].GetComponent<Renderer>().material = used[F[i, j] % 10];
 
-            //todo: раскраска спрайта следующего блока
+            //todo: СЂР°СЃРєСЂР°СЃРєР° СЃРїСЂР°Р№С‚Р° СЃР»РµРґСѓСЋС‰РµРіРѕ Р±Р»РѕРєР°
         }
 
         public void CleanBlocks()
         {
-            //смещаем по вертикали, потом по горизонтали
+            //СЃРјРµС‰Р°РµРј РїРѕ РІРµСЂС‚РёРєР°Р»Рё, РїРѕС‚РѕРј РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
             bool hasMove = true;
             while (hasMove)
             {
@@ -339,7 +339,7 @@ namespace AssemblyCSharp
                     }
             }
 
-            //удаляем все следы
+            //СѓРґР°Р»СЏРµРј РІСЃРµ СЃР»РµРґС‹
             for (int i = 0; i < FIELD_X; i++)
                 for (int j = 0; j < FIELD_Y; j++)
                     if (F[i, j] < 0)
